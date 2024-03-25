@@ -119,56 +119,68 @@ class UMTDatabase:
                 # Commit changes to the database
             self.conn.commit()
             print("Database schema update completed.", flush=True)
-            
-            
+                
     def import_data(self, data_to_import, unique_key):
-        
         """
         Updates an existing record or inserts a new one into the specified table.
-        
-        :param data_to_import: A dictionary where keys are column names and values are the data to insert/update.
+        If the 'price' has changed, it updates 'totalpricereduction' accordingly.
+
+        :param data_to_import: An object or dictionary where keys are column names and values are the data to insert/update.
         :param unique_key: The unique identifier column name for checking existing records.
         """
-
-
-        
-        # Filter out None values
-        data_to_import = {k: v for k, v in data_to_import.__dict__.items() if v is not None}
-        
+        # If data_to_import is an object, convert to dictionary; otherwise, ensure it's a clean dict
+        if not isinstance(data_to_import, dict):
+            data_dict = {k: v for k, v in data_to_import.__dict__.items() if v is not None}
+        else:
+            data_dict = {k: v for k, v in data_to_import.items() if v is not None}
 
         # Fetch existing records to check for duplicates
-        self.cursor.execute(f"SELECT * FROM {self.TableName} WHERE {unique_key} = ?", (data_to_import[unique_key],))
+        self.cursor.execute(f"SELECT * FROM {self.TableName} WHERE {unique_key} = ?", (data_dict[unique_key],))
         existing_record = self.cursor.fetchone()
 
         if existing_record:
-            
             existing_data_dict = {desc[0]: value for desc, value in zip(self.cursor.description, existing_record)}
-            
-            # changes = any(existing_data_dict.get(key) != value for key,value in data_to_import.items() if key != "LastUpdated")
-                   # Initialize an empty list to hold keys of the changed data
+
             changed_keys = []
-            
-            # Determine which keys have changed, excluding 'lastupdated'
-            for key, new_value in existing_data_dict.items():
-                if key != "lastupdated" and existing_data_dict.get(key) != new_value:
+            price_change_detected = False
+            price_difference = 0
+
+            # Determine which keys have changed, excluding 'lastupdated', and calculate price difference if applicable
+            for key, new_value in data_dict.items():
+                old_value = existing_data_dict.get(key)
+                if key != "lastupdated" and old_value != new_value:
                     changed_keys.append(key)
-        
-            if changed_keys:            
-                # Record exists, prepare to update
-                update_parts = ", ".join([f"{k} = ?" for k in data_to_import.keys()])
-                update_values = list(data_to_import.values()) + [data_to_import[unique_key]]
+                    if key == "price":
+                        price_change_detected = True
+                        # Calculate the difference if the old value is not None; otherwise, treat as no reduction
+                        price_difference = old_value - new_value if old_value is not None else 0
+
+            if changed_keys:
+                # Update 'totalpricereduction' if price has changed
+                if price_change_detected:
+                    totalpricereduction = existing_data_dict.get("totalpricereduction", 0) or 0
+                    new_totalpricereduction = totalpricereduction + price_difference
+                    data_dict["totalpricereduction"] = new_totalpricereduction  # Update data_dict to include this change
+                    if "totalpricereduction" not in changed_keys:
+                        changed_keys.append("totalpricereduction")  # Ensure this field is updated
+                
+                # Prepare update query with changed fields
+                update_parts = ", ".join([f"{k} = ?" for k in changed_keys])
+                update_values = [data_dict[k] for k in changed_keys] + [data_dict[unique_key]]
                 update_query = f"UPDATE {self.TableName} SET {update_parts} WHERE {unique_key} = ?"
                 self.cursor.execute(update_query, update_values)
                 
-                print("Updating current listing", flush=True)
-
+                print("Updating current listing due to changes", flush=True)
             else:
-                print("No changes to current listing", flush=True)
+                print("No changes detected; not updating listing", flush=True)
         else:
             # No existing record, prepare to insert
-            columns = ", ".join(data_to_import.keys())
-            placeholders = ", ".join(["?" for _ in data_to_import])
+            columns = ", ".join(data_dict.keys())
+            placeholders = ", ".join(["?" for _ in data_dict])
+            insert_values = list(data_dict.values())
             insert_query = f"INSERT INTO {self.TableName} ({columns}) VALUES ({placeholders})"
-            self.cursor.execute(insert_query, list(data_to_import.values()))
-        
+            self.cursor.execute(insert_query, insert_values)
+            
+            print("Inserting new listing", flush=True)
+            
         self.conn.commit()
