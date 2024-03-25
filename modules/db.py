@@ -1,12 +1,45 @@
 import sqlite3
 import pandas as pd
+import datetime
+import re
 
+class productobject:
+    def __init__(self, **objectpairs):
+        if objectpairs:
+            for key, value in objectpairs.items():
+                setattr(self, key, value)
 
+            
+    def add_data(self, **objectpairs):
+        for key,value in objectpairs.items():
+            setattr(self, key, value)
+            
+    def get_data(self, key):
+        return getattr(self,key ,None)
+    
+    def __repr__(self) -> str:
+        attributes= ', '.join([f"{key}={value}" for key, value in self.__dict__.items()])
+        return attributes
+    
+class umtbargainsproductobject(productobject):
+    def __init__(self, **objectpairs):
+        super().__init__(**objectpairs),
+        title = self.get_data("title")
+        
+        
+        #regex to split
+        pattern = re.compile(r'^(.*?)\s*\[(.*)\]$')
+        match  = pattern.match(title)
+        if match:
+            name, condition = match.groups()
+            print(f"Title-> {name}. Condition -> {condition}")
+            setattr(self, "title", name)
+            setattr(self, "condition", condition)
+        else:
+            print(f"No match {title}")
 
+        
 class UMTDatabase:
-    
-              
-    
     def __init__(self, db_path=None, SCHEMA=None, TableName=None):
         if db_path == None:
             self.db_path = "UMTDB.db"
@@ -18,6 +51,7 @@ class UMTDatabase:
                 {
                         "Title": "TEXT",
                         "SKU": "TEXT",
+                        "Condition":"TEXT" ,
                         "StockStatus": "TEXT",
                         "Description": "TEXT",
                         "LastUpdated": "DATE",
@@ -33,6 +67,7 @@ class UMTDatabase:
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
         self.init_table()
+        self.update_table()
     
     
     def return_data(self):
@@ -43,6 +78,7 @@ class UMTDatabase:
             return None
         else:
             return data
+        
     def init_table(self):
             """
             Creates the table if it doesn't exist.
@@ -79,3 +115,39 @@ class UMTDatabase:
                 # Commit changes to the database
             self.conn.commit()
             print("Database schema update completed.", flush=True)
+            
+            
+    def import_data(self, data_to_import, unique_key):
+        
+        """
+        Updates an existing record or inserts a new one into the specified table.
+        
+        :param data_to_import: A dictionary where keys are column names and values are the data to insert/update.
+        :param unique_key: The unique identifier column name for checking existing records.
+        """
+        current_datetime = datetime.datetime.now()
+        datetime_str = current_datetime.strftime('%Y-%m-%d %H:%M:%S')
+        setattr(self, "DateUpdated",datetime_str)
+        
+        
+        # Filter out None values
+        data_to_import = {k: v for k, v in data_to_import.items() if v is not None}
+
+        # Fetch existing records to check for duplicates
+        self.cursor.execute(f"SELECT * FROM {self.TableName} WHERE {unique_key} = ?", (data_to_import[unique_key],))
+        existing_record = self.cursor.fetchone()
+
+        if existing_record:
+            # Record exists, prepare to update
+            update_parts = ", ".join([f"{k} = ?" for k in data_to_import.keys()])
+            update_values = list(data_to_import.values()) + [data_to_import[unique_key]]
+            update_query = f"UPDATE {self.TableName} SET {update_parts} WHERE {unique_key} = ?"
+            self.cursor.execute(update_query, update_values)
+        else:
+            # No existing record, prepare to insert
+            columns = ", ".join(data_to_import.keys())
+            placeholders = ", ".join(["?" for _ in data_to_import])
+            insert_query = f"INSERT INTO {self.TableName} ({columns}) VALUES ({placeholders})"
+            self.cursor.execute(insert_query, list(data_to_import.values()))
+        
+        self.conn.commit()

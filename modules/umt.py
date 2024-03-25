@@ -31,7 +31,7 @@ class UMTWebScraper:
         elif self.browser.lower() == 'firefox':
             return webdriver.Firefox(options=options)
 
-    def extract_data(self):
+    def extract_data(self)-> pd.DataFrame:
         self.driver.get(self.url)
         time.sleep(5)  # Wait for the dynamic content to load
         
