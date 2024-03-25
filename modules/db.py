@@ -172,8 +172,10 @@ class UMTDatabase:
             # Determine which keys have changed, excluding 'lastupdated', and calculate price difference if applicable
             print(existing_data_dict)
             for key, new_value in data_dict.items():
-                old_value = existing_data_dict.get(key)
-                if key != "lastupdated" and key != "totalpricereduction" and old_value != new_value:
+                
+                old_value = existing_data_dict.get(key.lower())
+                # print(key, new_value,old_value )
+                if key.lower() not in ["lastupdated", "totalpricereduction"] and old_value != new_value:
                     changed_keys.append(key)
                     if key == "price":
                         price_change_detected = True

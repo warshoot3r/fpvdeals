@@ -31,7 +31,7 @@ for new_product in data_frame.itertuples():
 for listing in bargains_objects:
     UMTBargainsDBTable.import_data(data_to_import=listing, unique_key="sku")
 
-UMTDATA = UMTBargainsDBTable.return_data_with_time(time_interval='1 hour')
+UMTDATA = UMTBargainsDBTable.return_data_with_time(time_interval='5 minutes')
 
 
 telegram.send_message(chat_id=credentials.chat_id, message="Updated UMT bargains has new information !s")
