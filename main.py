@@ -13,18 +13,19 @@ data_frame = UMTBargains.extract_data()
 bargains_objects = list()
 for new_product in data_frame.itertuples():
 
-    bargains_objects.append(umtbargainsproductobject(
+    bargains_objects.append(umtbargainsproductobject(.
       title= getattr(new_product, 'title'), 
       price=getattr(new_product, "price"),
       sku=getattr(new_product, "sku"), 
-      in_stock_status=getattr(new_product, "stock_status"),
+      stockstatus=getattr(new_product, "stock_status"),
       description= getattr(new_product, "description")
     ))
 
 
 
 #import data and update table
-
-
+for listing in bargains_objects:
+    UMTBargainsDBTable.import_data(data_to_import=listing, unique_key="sku")
 
 UMTDATA = UMTBargainsDBTable.return_data()
+print(UMTDATA)

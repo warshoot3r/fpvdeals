@@ -1,18 +1,22 @@
 import sqlite3
 import pandas as pd
-import datetime
+from datetime import datetime
 import re
 
 class productobject:
     def __init__(self, **objectpairs):
         if objectpairs:
             for key, value in objectpairs.items():
-                setattr(self, key, value)
-
-            
+                setattr(self, key, value) 
+        
+        current_datetime = datetime.now()
+        datetime_str = current_datetime.strftime('%Y-%m-%d %H:%M:%S')
+        setattr(self, "LastUpdated",datetime_str)
+        
     def add_data(self, **objectpairs):
         for key,value in objectpairs.items():
             setattr(self, key, value)
+            
             
     def get_data(self, key):
         return getattr(self,key ,None)
@@ -125,19 +129,19 @@ class UMTDatabase:
         :param data_to_import: A dictionary where keys are column names and values are the data to insert/update.
         :param unique_key: The unique identifier column name for checking existing records.
         """
-        current_datetime = datetime.datetime.now()
-        datetime_str = current_datetime.strftime('%Y-%m-%d %H:%M:%S')
-        setattr(self, "DateUpdated",datetime_str)
-        
+
+
         
         # Filter out None values
-        data_to_import = {k: v for k, v in data_to_import.items() if v is not None}
+        data_to_import = {k: v for k, v in data_to_import.__dict__.items() if v is not None}
 
         # Fetch existing records to check for duplicates
         self.cursor.execute(f"SELECT * FROM {self.TableName} WHERE {unique_key} = ?", (data_to_import[unique_key],))
         existing_record = self.cursor.fetchone()
 
         if existing_record:
+            
+            existing_record_dateupdated = existing_record["dateupdated"]
             # Record exists, prepare to update
             update_parts = ", ".join([f"{k} = ?" for k in data_to_import.keys()])
             update_values = list(data_to_import.values()) + [data_to_import[unique_key]]
