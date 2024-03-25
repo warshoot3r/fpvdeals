@@ -34,5 +34,5 @@ UMTDATA = UMTBargainsDBTable.return_data()
 
 
 telegram.send_message(chat_id=credentials.chat_id, message="Updated UMT bargains")
-telegram.send_dataframe(chat_id=credentials.chat_id, exclude_columns=["Description","id","SKU", "LastUpdated","StockStatus"], dataframe=UMTDATA)
+telegram.send_dataframe(chat_id=credentials.chat_id, exclude_columns=["Description","id","SKU", "LastUpdated","StockStatus", "TotalPriceReduction"], dataframe=UMTDATA)
 print(UMTDATA)

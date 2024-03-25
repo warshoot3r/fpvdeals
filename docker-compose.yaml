@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  cargiantscrape:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    init: true
+    image: jammyboi/fpvdeals:master
+    volumes:
+      - type: bind
+        source: ./UMTDB.db
+        target: /app/UMTDB.db
+      - type : bind
+        source: ./credentials.py
+        target: /app/credentials.py
