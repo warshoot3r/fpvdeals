@@ -70,7 +70,7 @@ jobs:
                     run: |
                         docker pull "${{ matrix.image_variant }}"
                   # - name: Download artifact This musn't be used as it will cause the db to be reverted
-                  #   uses: dawidd6/action-download-artifact@v2
+                  #   uses: dawidd6/action-download-artiffact@v2
                   #   id: download_db_step
                   #   continue-on-error: True
                   #   with:
