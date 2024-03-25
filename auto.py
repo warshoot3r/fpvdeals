@@ -12,7 +12,7 @@ UMTBargainsDBTable = UMTDatabase(TableName="Bargains")
 
 
 #scrape data
-#parse to objects and create object
+#parse to objects and crfeate object
 data_frame = UMTBargains.extract_data()
 bargains_objects = list()
 for new_product in data_frame.itertuples():
