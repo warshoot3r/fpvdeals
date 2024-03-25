@@ -28,7 +28,7 @@ UMTBargainsDBTable = UMTDatabase(TableName="Bargains")
 
 # #import data and update table
 # for listing in bargains_objects:
-#     UMTBargainsDBTable.import_data(data_to_import=listing, unique_key="sku")
+#     UMTBargainsDBTable.import_data(data_to_imfport=listing, unique_key="sku")
 
 UMTDATA = UMTBargainsDBTable.return_data()
 
