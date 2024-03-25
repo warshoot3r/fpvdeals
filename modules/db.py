@@ -1,4 +1,5 @@
 import sqlite3
+import pandas as pd
 
 
 
@@ -13,7 +14,7 @@ class UMTDatabase:
             self.db_path = db_path
 
         if SCHEMA == None:
-            self.SCHEMA = [ # change the ordering here to change the DB tables order. it changes it regardless of existing table
+            self.SCHEMA =[ # change the ordering here to change the DB tables order. it changes it regardless of existing table
                 {
                         "Title": "TEXT",
                         "SKU": "TEXT",
@@ -29,11 +30,19 @@ class UMTDatabase:
             self.SCHEMA = SCHEMA
             
         self.TableName = TableName
-        self.conn = sqlite3.connect(db_path)
+        self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
-        
         self.init_table()
-        
+    
+    
+    def return_data(self):
+        sql_query = f"SELECT * FROM {self.TableName}"
+        data =  pd.read_sql(sql_query, self.conn)
+        if data.empty:
+            print("No data in table.", flush=True)
+            return None
+        else:
+            return data
     def init_table(self):
             """
             Creates the table if it doesn't exist.
@@ -55,17 +64,18 @@ class UMTDatabase:
         self.cursor.execute(f"PRAGMA table_info({self.TableName});")
         current_columns_info = self.cursor.fetchall()
         current_columns = {info[1] for info in current_columns_info}  # Extract column names
-
         # Check for missing columns and add them
-        for column_name, column_type in self.SCHEMA.items():
-            if column_name not in current_columns:
-                print(f"Missing column '{column_name}'. Adding to the database.", flush=True)
-                alter_table_sql = f"ALTER TABLE {self.TableName} ADD COLUMN \"{column_name}\" {column_type};"
-                self.cursor.execute(alter_table_sql)
-                print(f"Column '{column_name}' added.", flush=True)
-            else:
-                print(f"Column '{column_name}' already exists. No changes needed.", flush=True)
+        print("Updating the Table. `n",self.SCHEMA)
+        for data in self.SCHEMA:
+            for column_name, column_type in data.items():
+                    if column_name not in current_columns:
+                        print(f"Missing column '{column_name}'. Adding to the database.", flush=True)
+                        alter_table_sql = f"ALTER TABLE {self.TableName} ADD COLUMN \"{column_name}\" {column_type};"
+                        self.cursor.execute(alter_table_sql)
+                        print(f"Column '{column_name}' added.", flush=True)
+                    else:
+                        print(f"Column '{column_name}' already exists. No changes needed.", flush=True)
 
-        # Commit changes to the database
-        self.conn.commit()
-        print("Database schema update completed.", flush=True)
+                # Commit changes to the database
+            self.conn.commit()
+            print("Database schema update completed.", flush=True)
