@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import datetime
 import re
 
+
 class productobject:
     def __init__(self, **objectpairs):
         if objectpairs:

@@ -78,4 +78,3 @@ with open(csv_file_path, 'w', newline='', encoding='utf-8') as file:
 
 print(f"Data scraped successfully. {len(data)} products found.")
 
-``
