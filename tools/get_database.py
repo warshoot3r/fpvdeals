@@ -11,6 +11,6 @@ import credentials
 telegram = TelegramBot(api_token=credentials.api)
 
 
-UMTBargainsurl = 'https://www.unmannedtechshop.co.uk/product-category/parts-sensors/bargain-bin/'
-UMTBargains = UMTWebScraper(browser='chrome', headless=True, url=UMTBargainsurl)
 UMTBargainsDBTable = UMTDatabase(TableName="Bargains")
+
+print(UMTBargainsDBTable.return_data())

@@ -32,4 +32,4 @@ COPY --link auto.py .
 COPY --link test.py .
 
 ENTRYPOINT ["python3"]
-CMD ["chatbot_autorun.py"] 
+CMD ["auto.py"] 
