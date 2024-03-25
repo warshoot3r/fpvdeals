@@ -29,7 +29,7 @@ ENV CHROME_DRIVER=/usr/bin/chromedriver
 # Copy class files and main.py
 COPY --link modules /modules
 COPY --link auto.py .
-
+COPY --link test.py .
 
 ENTRYPOINT ["python3"]
 CMD ["chatbot_autorun.py"] 
