@@ -84,6 +84,29 @@ class UMTDatabase:
         else:
             return data
         
+    def return_data_with_time(self, time_interval='1 hour'):
+            """
+            Fetches data updated within the specified time interval.
+
+            Args:
+            time_interval (str): The time interval within which the data should have been updated.
+                                The format should be compatible with SQL, e.g., '1 hour', '30 minutes'.
+            """
+            # Adjust the SQL query to include the time_interval in the WHERE clause
+            # Note: The SQL syntax might need adjustments based on your specific SQL dialect
+            sql_query = f"""
+            SELECT * 
+            FROM {self.TableName} 
+            WHERE lastupdated >=  datetime('now', '-{time_interval}')
+            """
+
+            data = pd.read_sql(sql_query, self.conn)
+            if data.empty:
+                print(f"No data updated in the last {time_interval}.", flush=True)
+                return None
+            else:
+                return data
+            
     def init_table(self):
             """
             Creates the table if it doesn't exist.
@@ -140,22 +163,24 @@ class UMTDatabase:
         existing_record = self.cursor.fetchone()
 
         if existing_record:
-            existing_data_dict = {desc[0]: value for desc, value in zip(self.cursor.description, existing_record)}
+            existing_data_dict = {desc[0].lower(): value for desc, value in zip(self.cursor.description, existing_record)}
 
             changed_keys = []
             price_change_detected = False
             price_difference = 0
 
             # Determine which keys have changed, excluding 'lastupdated', and calculate price difference if applicable
+            print(existing_data_dict)
             for key, new_value in data_dict.items():
                 old_value = existing_data_dict.get(key)
-                if key != "lastupdated" and old_value != new_value:
+                if key != "lastupdated" and key != "totalpricereduction" and old_value != new_value:
                     changed_keys.append(key)
                     if key == "price":
                         price_change_detected = True
                         # Calculate the difference if the old value is not None; otherwise, treat as no reduction
                         price_difference = old_value - new_value if old_value is not None else 0
-
+           
+            
             if changed_keys:
                 # Update 'totalpricereduction' if price has changed
                 if price_change_detected:
