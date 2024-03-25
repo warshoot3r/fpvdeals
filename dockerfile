@@ -27,7 +27,7 @@ ENV PATH="/usr/lib/chromium/:${PATH}"
 ENV CHROME_DRIVER=/usr/bin/chromedriver
 
 # Copy class files and main.py
-COPY --link modules /modules
+COPY --link modules /app/modules
 COPY --link auto.py .
 COPY --link test.py .
 
