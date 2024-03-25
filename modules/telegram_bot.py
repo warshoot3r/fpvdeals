@@ -307,6 +307,9 @@ class TelegramBot:
         - show_header: Whether to include the DataFrame's column headers.
         - MessageThreadID: Optional. The ID of the message thread to reply to.
         """
+        if dataframe is None:
+            print("Datafame empty nothing to send")
+            return
         # Exclude specified columns if any
         if exclude_columns is not None:
             dataframe = dataframe.drop(columns=exclude_columns, errors='ignore')

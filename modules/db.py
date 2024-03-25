@@ -122,14 +122,13 @@ class UMTDatabase:
             print("Table Initialised.",flush=True)
 
     def update_table(self):
-        
+        updates_made = False
             
                 # Fetch current table column names
         self.cursor.execute(f"PRAGMA table_info({self.TableName});")
         current_columns_info = self.cursor.fetchall()
         current_columns = {info[1] for info in current_columns_info}  # Extract column names
         # Check for missing columns and add them
-        print("Updating the Table. `n",self.SCHEMA)
         for data in self.SCHEMA:
             for column_name, column_type in data.items():
                     if column_name not in current_columns:
@@ -137,10 +136,13 @@ class UMTDatabase:
                         alter_table_sql = f"ALTER TABLE {self.TableName} ADD COLUMN \"{column_name}\" {column_type};"
                         self.cursor.execute(alter_table_sql)
                         print(f"Column '{column_name}' added.", flush=True)
+                        updates_made = True
                     else:
                         print(f"Column '{column_name}' already exists. No changes needed.", flush=True)
 
                 # Commit changes to the database
+
+
             self.conn.commit()
             print("Database schema update completed.", flush=True)
                 
@@ -170,7 +172,6 @@ class UMTDatabase:
             price_difference = 0
 
             # Determine which keys have changed, excluding 'lastupdated', and calculate price difference if applicable
-            print(existing_data_dict)
             for key, new_value in data_dict.items():
                 
                 old_value = existing_data_dict.get(key.lower())
