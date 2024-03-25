@@ -34,6 +34,6 @@ for listing in bargains_objects:
 UMTDATA = UMTBargainsDBTable.return_data_with_time(time_interval='1 hour')
 
 
-telegram.send_message(chat_id=credentials.chat_id, message="Updated UMT bargains has new information")
+telegram.send_message(chat_id=credentials.chat_id, message="Updated UMT bargains has new information !s")
 telegram.send_dataframe(chat_id=credentials.chat_id, exclude_columns=["Description","id","SKU", "LastUpdated","StockStatus", "TotalPriceReduction"], dataframe=UMTDATA)
 print(UMTDATA)
