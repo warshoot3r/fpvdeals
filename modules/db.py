@@ -134,6 +134,7 @@ class UMTDatabase:
         
         # Filter out None values
         data_to_import = {k: v for k, v in data_to_import.__dict__.items() if v is not None}
+        
 
         # Fetch existing records to check for duplicates
         self.cursor.execute(f"SELECT * FROM {self.TableName} WHERE {unique_key} = ?", (data_to_import[unique_key],))
@@ -141,12 +142,28 @@ class UMTDatabase:
 
         if existing_record:
             
-            existing_record_dateupdated = existing_record["dateupdated"]
-            # Record exists, prepare to update
-            update_parts = ", ".join([f"{k} = ?" for k in data_to_import.keys()])
-            update_values = list(data_to_import.values()) + [data_to_import[unique_key]]
-            update_query = f"UPDATE {self.TableName} SET {update_parts} WHERE {unique_key} = ?"
-            self.cursor.execute(update_query, update_values)
+            existing_data_dict = {desc[0]: value for desc, value in zip(self.cursor.description, existing_record)}
+            
+            # changes = any(existing_data_dict.get(key) != value for key,value in data_to_import.items() if key != "LastUpdated")
+                   # Initialize an empty list to hold keys of the changed data
+            changed_keys = []
+            
+            # Determine which keys have changed, excluding 'lastupdated'
+            for key, new_value in existing_data_dict.items():
+                if key != "lastupdated" and existing_data_dict.get(key) != new_value:
+                    changed_keys.append(key)
+        
+            if changed_keys:            
+                # Record exists, prepare to update
+                update_parts = ", ".join([f"{k} = ?" for k in data_to_import.keys()])
+                update_values = list(data_to_import.values()) + [data_to_import[unique_key]]
+                update_query = f"UPDATE {self.TableName} SET {update_parts} WHERE {unique_key} = ?"
+                self.cursor.execute(update_query, update_values)
+                
+                print("Updating current listing", flush=True)
+
+            else:
+                print("No changes to current listing", flush=True)
         else:
             # No existing record, prepare to insert
             columns = ", ".join(data_to_import.keys())

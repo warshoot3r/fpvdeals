@@ -13,7 +13,7 @@ data_frame = UMTBargains.extract_data()
 bargains_objects = list()
 for new_product in data_frame.itertuples():
 
-    bargains_objects.append(umtbargainsproductobject(.
+    bargains_objects.append(umtbargainsproductobject(
       title= getattr(new_product, 'title'), 
       price=getattr(new_product, "price"),
       sku=getattr(new_product, "sku"), 
