@@ -10,6 +10,7 @@ UMTBargains = UMTWebScraper(browser='chrome', headless=True, url=UMTBargainsurl)
 UMTBargainsDBTable = UMTDatabase(TableName="Bargains")
 
 
+#
 #scrape data
 #parse to objects and create object
 data_frame = UMTBargains.extract_data()
