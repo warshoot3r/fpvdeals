@@ -129,8 +129,10 @@ jobs:
             repo: ${{ github.repository }}
             path: /home/runner/work/fpvdeals/fpvdeals/
 
+        - name: Create empty DB file as no DB
+          if: steps.download_db_step.outcome == 'failure'
+          run: touch /home/runner/work/fpvdeals/fpvdeals/UMTDB.db
+
         - name: Run Price scraping
-          if: steps.download_db_step.outcome == 'success'
           run: |
               docker run --rm -v /home/runner/work/fpvdeals/fpvdeals/credentials.py:/app/credentials.py -v /home/runner/work/fpvdeals/fpvdeals/UMTDB.db:/app/UMTDB.db  ${{ matrix.image_variant }} auto.py
-  
