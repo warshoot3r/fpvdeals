@@ -107,8 +107,8 @@ jobs:
           image_variant:
             - jammyboi/fpvdeals:master
       steps:
-        - name: Wait for 5 minutes
-          run: sleep 300  # To prevent over pulling docker
+        - name: Wait for 1 minutes
+          run: sleep 60  # To prevent over pulling docker
         - name: Checkout Repository
           uses: actions/checkout@v3
   
@@ -125,7 +125,7 @@ jobs:
           id: download_db_step
           continue-on-error: True
           with:
-            name: cargiantdbfile
+            name: UMTDB
             repo: ${{ github.repository }}
             path: /home/runner/work/fpvdeals/fpvdeals/
 
