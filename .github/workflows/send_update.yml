@@ -118,7 +118,7 @@ jobs:
   
         - name: Make Credentials.py
           run: |
-            printf 'api_token = "${{ secrets.api_token}}"\nchat_id="${{secrets.telegram_group}}"\nmessage_id="${{secrets.DAILY_REPORT_MESSAGE_ID}}"\n' > /home/runner/work/fpvdeals/fpvdeals/credentials.py
+            printf 'api = "${{ secrets.api_token}}"\nchat_id="${{secrets.telegram_group}}"\nmessage_id="${{secrets.DAILY_REPORT_MESSAGE_ID}}"\n' > /home/runner/work/fpvdeals/fpvdeals/credentials.py
 
         - name: Download artifact This musn't be used as it will cause the db to be reverted
           uses: dawidd6/action-download-artifact@v2
