@@ -125,7 +125,7 @@ jobs:
           id: download_db_step
           continue-on-error: True
           with:
-            name: UMTDB
+            name: UMTDBdata
             repo: ${{ github.repository }}
             path: /home/runner/work/fpvdeals/fpvdeals/
 
@@ -136,3 +136,8 @@ jobs:
         - name: Run Price scraping
           run: |
               docker run --rm -v /home/runner/work/fpvdeals/fpvdeals/credentials.py:/app/credentials.py -v /home/runner/work/fpvdeals/fpvdeals/UMTDB.db:/app/UMTDB.db  ${{ matrix.image_variant }} auto.py
+        - name: Save db data as an artifact
+          uses: actions/upload-artifact@v3
+          with:
+            name: UMTDBdata
+            path: /home/runner/work/cargiantscrape/cargiantscrape/UMTDB.db
