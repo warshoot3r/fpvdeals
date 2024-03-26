@@ -30,7 +30,7 @@ class umtbargainsproductobject(productobject):
     def __init__(self, **objectpairs):
         super().__init__(**objectpairs),
         title = self.get_data("title")
-        
+        price = self.get_data("price")
         
         #regex to split
         pattern = re.compile(r'^(.*?)\s*\[(.*)\]$')
@@ -42,7 +42,23 @@ class umtbargainsproductobject(productobject):
             setattr(self, "condition", condition)
         else:
             print(f"No match {title}")
+        # Regex to extract the numeric value from a string like "£5.00"
+        pattern = re.compile(r'£(\d+\.\d+)')
+        match = pattern.search(price)
+        
+        if match:
+            # Extracting the monetary value and converting it to an integer representation
+            monetary_value = match.group(1)  # This will be something like '5.00' or '89.95'
+            # Removing the decimal point and converting to integer
+            monetary_value_as_int = int(monetary_value.replace('.', ''))
+            
+            print(f"Monetary Value: {monetary_value}. Integer Representation: {monetary_value_as_int}")
+            
+            # Setting attributes for later use
+            setattr(self, "price", monetary_value)
 
+        else:
+            print(f"No monetary value found in title: {price}")
         
 class UMTDatabase:
     def __init__(self, db_path=None, SCHEMA=None, TableName=None):
@@ -60,7 +76,7 @@ class UMTDatabase:
                         "StockStatus": "TEXT",
                         "Description": "TEXT",
                         "LastUpdated": "DATE",
-                        "Price": "INTEGER",
+                        "Price": "REAL",
                         "TotalPriceReduction": "INTEGER"
 
                 }
@@ -112,12 +128,13 @@ class UMTDatabase:
             Creates the table if it doesn't exist.
             The table has columns: id, make, model, and price.
             """
-            sql_table_col = ", ".join([f'"{key}"' for key, values in self.SCHEMA[0].items()])
+            sql_table_col = ", ".join([f'"{key}" {values}' for key, values in self.SCHEMA[0].items()])
             sql_string = f'''CREATE TABLE IF NOT EXISTS {self.TableName}
                             (id INTEGER PRIMARY KEY,
-                            {sql_table_col}
+                            {sql_table_col} 
                             )
             '''
+            print(f"Running SQL: {sql_string}")
             self.cursor.execute(sql_string)
             print("Table Initialised.",flush=True)
 
@@ -177,11 +194,15 @@ class UMTDatabase:
                 old_value = existing_data_dict.get(key.lower())
                 # print(key, new_value,old_value )
                 if key.lower() not in ["lastupdated", "totalpricereduction"] and old_value != new_value:
-                    changed_keys.append(key)
+                   
                     if key == "price":
                         price_change_detected = True
                         # Calculate the difference if the old value is not None; otherwise, treat as no reduction
-                        price_difference = old_value - new_value if old_value is not None else 0
+                        price_difference = float(old_value) - float(new_value) if old_value is not None else 0
+                        if price_difference != 0:
+                            changed_keys.append(key)
+                    else:
+                        changed_keys.append(key)
            
             
             if changed_keys:
@@ -199,7 +220,7 @@ class UMTDatabase:
                 update_query = f"UPDATE {self.TableName} SET {update_parts} WHERE {unique_key} = ?"
                 self.cursor.execute(update_query, update_values)
                 
-                print("Updating current listing due to changes", flush=True)
+                print(f"Updating current listing due to changes {changed_keys}", flush=True)
             else:
                 print("No changes detected; not updating listing", flush=True)
         else:

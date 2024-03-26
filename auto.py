@@ -32,9 +32,10 @@ for new_product in data_frame.itertuples():
 for listing in bargains_objects:
     UMTBargainsDBTable.import_data(data_to_import=listing, unique_key="sku")
 
-UMTDATA = UMTBargainsDBTable.return_data_with_time(time_interval='5 minutes')
-
-
-telegram.send_message(chat_id=credentials.chat_id, message="Updated UMT bargains has new information \!s")
-telegram.send_dataframe(chat_id=credentials.chat_id, exclude_columns=["Description","id","SKU", "LastUpdated","StockStatus", "TotalPriceReduction"], dataframe=UMTDATA)
+UMTDATA = UMTBargainsDBTable.return_data_with_time(time_interval='20 minutes').sort_values(by=["Price","Condition"], ascending=[True, False])
+if UMTDATA.empty:
+  print("No data in table so not sending any data", flush=True)
+else:
+  telegram.send_message(chat_id=credentials.chat_id, message="Updated UMT bargains has new information \!")
+  telegram.send_dataframe(chat_id=credentials.chat_id, exclude_columns=["Description","id","SKU", "LastUpdated","StockStatus", "TotalPriceReduction"], dataframe=UMTDATA)
 print(UMTDATA)
