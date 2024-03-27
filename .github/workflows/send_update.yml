@@ -140,4 +140,4 @@ jobs:
           uses: actions/upload-artifact@v3
           with:
             name: UMTDBdata
-            path: /home/runner/work/cargiantscrape/cargiantscrape/UMTDB.db
+            path: /home/runner/work/fpvdeals/fpvdeals/UMTDB.db
