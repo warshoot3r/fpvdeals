@@ -1,7 +1,7 @@
 name: "Daily run and send messages via Telegram"
 on:
   schedule:
-    - cron: '0 */6 * * *' # Schedule to run every half hour
+    - cron: '0 */2 * * *' # Schedule to run 2 hour
   workflow_dispatch: 
 
 jobs:
