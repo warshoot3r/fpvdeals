@@ -32,10 +32,24 @@ for new_product in data_frame.itertuples():
 for listing in bargains_objects:
     UMTBargainsDBTable.import_data(data_to_import=listing, unique_key="sku")
 
+# Assuming UMTBargainsDBTable.return_data_with_time is a method that returns either a pandas DataFrame or None
 UMTDATA = UMTBargainsDBTable.return_data_with_time(time_interval='20 minutes')
-if UMTDATA.empty:
-  print("No data in table so not sending any data", flush=True)
+
+# Check if UMTDATA is not None before checking if it's empty
+if UMTDATA is not None:
+    if not UMTDATA.empty:
+        try:
+            # Your data processing and sending logic here
+            sorted_filtered_data = UMTDATA.sort_values(by=["Price", "Condition"], ascending=[True, False])
+            sorted_filtered_data = sorted_filtered_data.drop(columns=["Description", "id", "SKU", "LastUpdated", "StockStatus", "TotalPriceReduction"])
+            telegram.send_message(chat_id=credentials.chat_id, message="Updated UMT bargains has new information!")
+            telegram.send_dataframe(chat_id=credentials.chat_id, dataframe=sorted_filtered_data)
+        except Exception as e:
+            print(f"An error occurred while processing or sending data: {e}", flush=True)
+    else:
+        print("No data in table so not sending any data", flush=True)
 else:
-  telegram.send_message(chat_id=credentials.chat_id, message="Updated UMT bargains has new information \!")
-  telegram.send_dataframe(chat_id=credentials.chat_id, exclude_columns=["Description","id","SKU", "LastUpdated","StockStatus", "TotalPriceReduction"], dataframe=UMTDATA.sort_values(by=["Price","Condition"], ascending=[True, False]))
+    print("UMTDATA is None, indicating no data was returned.", flush=True)
+
+# Optionally, print UMTDATA for debugging purposes
 print(UMTDATA)
