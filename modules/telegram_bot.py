@@ -342,3 +342,44 @@ class TelegramBot:
             print("Message exceeds the maximum length. Consider sending the DataFrame as a file or in multiple parts.")
         else:
             self.send_message(chat_id, message, ParserType="HTML", MessageThreadID=MessageThreadID)
+   
+    def send_href_formatted_dataframe(self, chat_id, dataframe, caption="", show_columns=None, show_header=False, MessageThreadID = None):
+        # Format URLs using the provided code
+        if 'HREF' in dataframe.columns:
+                # Format titles as hyperlinks using the 'HREF' column
+                hyperlink_column = dataframe.apply(lambda row: f'<a href="{row["HREF"]}">{row["Title"]}</a>', axis=1)
+        else:
+                # If there's no 'HREF' column, revert to displaying titles without hyperlink
+            print("Warning: 'HREF' column not found. Titles will be displayed without hyperlinks.")
+            hyperlink_column = dataframe['Title']
+        # Create a copy of the DataFrame and sort it
+        sorted_dataframe = dataframe.copy().drop(columns="HREF", errors='ignore')
+
+        # Update the 'URL' column with hyperlinks
+        sorted_dataframe['Title'] = hyperlink_column
+
+        # Filter columns if specified
+
+        # Convert the DataFrame to a formatted string with adjusted spacing
+        header = sorted_dataframe.columns.to_list()
+        formatted_rows = []
+
+        # Format header
+        if show_header == False:
+            sorted_dataframe.columns = [None] * len(sorted_dataframe.columns) 
+        else: #  show column names if show_header is true
+            formatted_header = ' | '.join(header)
+            formatted_rows.append(formatted_header)
+        
+           
+        
+        # Format data rows
+        for _, row in sorted_dataframe.iterrows():
+            formatted_row = ' | '.join(row.astype(str).values)
+            formatted_rows.append(formatted_row)
+
+        # Combine the caption and formatted DataFrame
+        message = caption + "\n" + '\n'.join(formatted_rows)
+        print(message)
+        # Send the message
+        self.send_message(chat_id, message, ParserType="HTML", MessageThreadID=MessageThreadID)
