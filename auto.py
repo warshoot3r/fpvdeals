@@ -2,6 +2,7 @@
 from modules.umt import UMTWebScraper
 from modules.db import UMTDatabase, umtbargainsproductobject
 from modules.telegram_bot import TelegramBot
+import numpy as np
 import credentials
 telegram = TelegramBot(api_token=credentials.api)
 
@@ -45,7 +46,16 @@ if UMTDATA is not None:
             sorted_filtered_data = sorted_filtered_data.drop(columns=["Description", "id", "SKU", "LastUpdated", "StockStatus", "TotalPriceReduction"])
             telegram.send_message(chat_id=credentials.chat_id, message="Updated UMT bargains has new information")
             # telegram.send_dataframe(chat_id=credentials.chat_id, dataframe=sorted_filtered_data)
-            telegram.send_href_formatted_dataframe(chat_id=credentials.chat_id, show_columns=["Title", "Price","Reason","Condition"],dataframe=sorted_filtered_data)
+            # Calculate the number of chunks needed
+            num_chunks = int(np.ceil(len(sorted_filtered_data) / 20))
+
+            # Split the DataFrame into chunks
+            dataframe_chunks = np.array_split(sorted_filtered_data, num_chunks)
+
+            # Iterate over the DataFrame chunks and send them using send_href_formatted_dataframe
+            for i, chunk in enumerate(dataframe_chunks, start=1):
+                caption = f"Part {i} of {num_chunks}"
+                telegram.send_href_formatted_dataframe(chat_id=credentials.chat_id, show_columns=["Title", "Price", "Reason", "Condition"], dataframe=chunk, caption=caption)
 
         except Exception as e:
             print(f"An error occurred while processing or sending data: {e}", flush=True)

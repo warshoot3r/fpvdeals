@@ -334,15 +334,19 @@ class TelegramBot:
         message_parts.append("</pre>")
 
         message = "\n".join(message_parts)
-
-        # Split and send the message if it exceeds Telegram's character limit
-        max_length = 4096 - 10  # Subtracting some characters for safety margin
+        max_length = 2000  # Set the character limit
         if len(message) > max_length:
-            # Ideally implement a more sophisticated splitting logic here
-            print("Message exceeds the maximum length. Consider sending the DataFrame as a file or in multiple parts.")
+            num_parts = len(message) // max_length + 1
+            print(f"Message exceeds the maximum length. Splitting into {num_parts} parts.")
+
+            # Split the message into parts
+            message_parts = [message[i:i+max_length] for i in range(0, len(message), max_length)]
+
+            for idx, part in enumerate(message_parts, start=1):
+                part_caption = f"{caption} - Part {idx}" if caption else f"Part {idx}"
+                self.send_message(chat_id, part, ParserType="HTML", caption=part_caption, MessageThreadID=MessageThreadID)
         else:
-            self.send_message(chat_id, message, ParserType="HTML", MessageThreadID=MessageThreadID)
-   
+            self.send_message(chat_id, message, ParserType="HTML", MessageThreadID=MessageThreadID) 
     def send_href_formatted_dataframe(self, chat_id, dataframe, caption="", show_columns=None, show_header=False, MessageThreadID = None):
         # Format URLs using the provided code
         if 'HREF' in dataframe.columns:
