@@ -66,14 +66,14 @@ class UMTWebScraper:
         )
 
         start_time = time.time()  # Start timing for the timeout check.
-        timeout = 20  # Set the timeout to 2 minutes.
+        timeout = 200  # Set the timeout to 2 minutes.
         last_height = 0
         while True:
             # Scroll to the bottom of the page
             self.driver.execute_script("window.scrollTo(0, window.pageYOffset + 1000);")
             
             # Wait for the page to load. Adjust the wait time as necessary.
-            time.sleep(3)
+            time.sleep(2)
 
             # Attempt to wait for the loading indicator to disappear if applicable
             try:
