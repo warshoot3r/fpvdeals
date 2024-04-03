@@ -379,7 +379,7 @@ class TelegramBot:
         
         # Format data rows
         for _, row in sorted_dataframe.iterrows():
-            formatted_row = ' | '.join(row.astype(str).values)
+            formatted_row = ' | '.join(row.astype(str).values).join("\n")#add a space for better formating
             formatted_rows.append(formatted_row)
 
         # Combine the caption and formatted DataFrame
