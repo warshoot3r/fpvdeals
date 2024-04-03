@@ -11,7 +11,6 @@ UMTBargains = UMTWebScraper(browser='chrome', headless=True, url=UMTBargainsurl)
 UMTBargainsDBTable = UMTDatabase(TableName="Bargains")
 
 
-
 #scrape data
 #parse to objects and crfeate object
 data_frame = UMTBargains.extract_data()
@@ -50,6 +49,10 @@ if UMTDATA is not None:
         print("No data in table so not sending any data", flush=True)
 else:
     print("UMTDATA is None, indicating no data was returned.", flush=True)
+
+
+
+
 
 # Optionally, print UMTDATA for debugging purposes
 print(UMTDATA)
