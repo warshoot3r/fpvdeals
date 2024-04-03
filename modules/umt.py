@@ -44,8 +44,7 @@ class UMTWebScraper:
         else:
             raise ValueError("Unsupported browser. Please choose 'chrome' or 'firefox'.")
 
-        if self.headless:
-            options.add_argument('--headless=new')
+
 
         options.add_argument('--ignore-certificate-errors')
         options.add_argument('--incognito')
