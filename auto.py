@@ -23,7 +23,8 @@ for new_product in data_frame.itertuples():
       price=getattr(new_product, "price"),
       sku=getattr(new_product, "sku"), 
       stockstatus=getattr(new_product, "stock_status"),
-      description= getattr(new_product, "description")
+      description= getattr(new_product, "description"),
+      href=getattr(new_product, "href")
     ))
 
 

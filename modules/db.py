@@ -78,7 +78,8 @@ class UMTDatabase:
                         "LastUpdated": "DATE",
                         "Price": "REAL",
                         "TotalPriceReduction": "INTEGER",
-                        "Reason": "TEXT"
+                        "Reason": "TEXT",
+                        "HREF": "TEXT"
                 }
             ]
         else:
