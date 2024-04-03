@@ -39,7 +39,7 @@ if UMTDATA is not None:
     if not UMTDATA.empty:
         try:
             # Your data processing and sending logic here
-            sorted_filtered_data = UMTDATA.sort_values(by=["Price", "Condition"], ascending=[True, False])
+            sorted_filtered_data = UMTDATA.sort_values(by=["Price", "Condition", "Reason"], ascending=[True, False])
             sorted_filtered_data = sorted_filtered_data.drop(columns=["Description", "id", "SKU", "LastUpdated", "StockStatus", "TotalPriceReduction"])
             telegram.send_message(chat_id=credentials.chat_id, message="Updated UMT bargains has new information!")
             telegram.send_dataframe(chat_id=credentials.chat_id, dataframe=sorted_filtered_data)

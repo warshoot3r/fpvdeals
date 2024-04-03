@@ -77,8 +77,8 @@ class UMTDatabase:
                         "Description": "TEXT",
                         "LastUpdated": "DATE",
                         "Price": "REAL",
-                        "TotalPriceReduction": "INTEGER"
-
+                        "TotalPriceReduction": "INTEGER",
+                        "Reason": "TEXT"
                 }
             ]
         else:
@@ -180,11 +180,11 @@ class UMTDatabase:
         # Fetch existing records to check for duplicates
         self.cursor.execute(f"SELECT * FROM {self.TableName} WHERE {unique_key} = ?", (data_dict[unique_key],))
         existing_record = self.cursor.fetchone()
-        changed_keys = []
+        
 
         if existing_record:
             existing_data_dict = {desc[0].lower(): value for desc, value in zip(self.cursor.description, existing_record)}
-
+            changed_keys = []
             price_change_detected = False
             price_difference = 0
 
@@ -195,41 +195,63 @@ class UMTDatabase:
                 # print(key, new_value,old_value )
                 if key.lower() not in ["lastupdated", "totalpricereduction"] and old_value != new_value:
                     if key == "price":
-                        price_change_detected = True
                         # Calculate the difference if the old value is not None; otherwise, treat as no reduction
                         price_difference = float(old_value) - float(new_value) if old_value is not None else 0
                         if price_difference != 0:
-                            existing_data_dict["totalpricereduction"] = price_difference
+                            price_change_detected = True
+                            
+                            existing_data_dict["totalpricereduction"] = round(price_difference, 4)
                             existing_data_dict["price"] = float(new_value)
+                            existing_data_dict["reason"] = "Price Changed"
+                            
+                            
+                            
                             changed_keys.append(existing_data_dict)
                             print(f" {existing_record[1]} {key} reduced to {price_difference} from {old_value}")
                     else:
                         existing_data_dict[key] = new_value
+                        existing_data_dict["reason"] = f"{key} changed"
                         print(f" {existing_record[1]} {key} changed with {old_value} -> {new_value}")
                         changed_keys.append(existing_data_dict)
 
                # Update 'totalpric:ereduction' if price has changed
             if changed_keys:
-                if price_change_detected:                      
-                        pass# Prepare update query with changed fieldstemp/UMTDB.db
-# Update the existing entry
-                query = ""
-                unique_key_value = ""
-                for products in changed_keys:
 
+                # Initialize variables for constructing the parameterized query
+                query_parts = []
+                params = []
+                unique_key_value = ""
+
+                # Construct the query and parameters list
+                for products in changed_keys:
                     for properties_key, properties_value in products.items():
-                        query += f"'{properties_key}' = '{properties_value}', "
+                        if properties_key == "lastupdated":
+                            current_datetime = datetime.now()
+                            datetime_str = current_datetime.strftime('%Y-%m-%d %H:%M:%S')
+                            query_parts.append(f"{properties_key} = ?")
+                            params.append(datetime_str)
+                        else:
+                            query_parts.append(f"{properties_key} = ?")
+                            params.append(properties_value)
                         if properties_key == "sku":
                             unique_key_value = properties_value
                         
-                    query = query.rstrip(', ')
-                update_query = f"UPDATE {self.TableName} SET {query} WHERE '{unique_key}' = '{unique_key_value}'"
-                print(f"Updating current listing due to changes. Running SQL: \n {update_query}", flush=True)
-                self.cursor.execute(update_query)
+                # Join the query parts and add the WHERE clause
+                query = ", ".join(query_parts)
+                update_query = f"UPDATE {self.TableName} SET {query} WHERE {unique_key} = ?"
+                # Add the unique key value to the parameters list
+                params.append(unique_key_value)
+
+                print(f"Updating current listing due to changes. Running SQL: \n {update_query} with parameters {params}", flush=True)
+                # Execute the parameterized query
+                self.cursor.execute(update_query, params)
             else:
-                        print("No changes detected; not updating listing", flush=True)
+                print("No changes detected; not updating listing", flush=True)
+
         else:
             # No existing record, prepare to insert
+            #add a reason 
+            data_dict["reason"] = "New Product"
             columns = ", ".join(data_dict.keys())
             placeholders = ", ".join(["?" for _ in data_dict])
             insert_values = list(data_dict.values())
