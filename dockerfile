@@ -31,6 +31,7 @@ ENV CHROME_DRIVER=/usr/bin/chromedriver
 COPY --link modules /app/modules
 COPY --link auto.py .
 COPY --link test.py .
+COPY --link send_report.py .
 
 ENTRYPOINT ["python3"]
 CMD ["auto.py"] 
