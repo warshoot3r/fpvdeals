@@ -68,6 +68,7 @@ class UMTWebScraper:
         start_time = time.time()  # Start timing for the timeout check.
         timeout = 200  # Set the timeout to 2 minutes.
         last_height = 0
+        printed_products = set()
         while True:
             # Scroll to the bottom of the page
             self.driver.execute_script("window.scrollTo(0, window.pageYOffset + 1000);")
@@ -124,7 +125,9 @@ class UMTWebScraper:
 
                 # Print out the brief list of new products
                 for index, product_summary in enumerate(temp_data_for_printing, start=1):
-                    print(f"Product {index}: Title - {product_summary['title']}, SKU - {product_summary['sku']}")
+                    if index not in printed_products:
+                        print(f"Product {index}: Title - {product_summary['title']}, SKU - {product_summary['sku']}")
+                        printed_products.add(index)
             except TimeoutException:
                                 print("Timed out waiting for new products to load.")
                                 
