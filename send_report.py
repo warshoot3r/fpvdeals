@@ -4,10 +4,6 @@ import datetime
 import sys
 
 
-mport datetime
-import sys
-import time  # Importing time for sleep
-
 # Assuming the scheduled times are the same
 scheduled_time_start_hour = 16.5
 scheduled_time_end_hour = 17.5
