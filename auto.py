@@ -1,4 +1,4 @@
-
+# t
 from modules.umt import UMTWebScraper
 from modules.db import UMTDatabase, umtbargainsproductobject
 from modules.telegram_bot import TelegramBot
